@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-inter), var(--font-lao), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* NTP theme (ອີງຕາມໂລໂກ້): ສີຟ້າ + ສີໄຟ */
+@theme {
+  --color-ntp-50: #eef6fd;
+  --color-ntp-100: #d6eafa;
+  --color-ntp-200: #b0d7f4;
+  --color-ntp-300: #7dbdeb;
+  --color-ntp-400: #3f9ade;
+  --color-ntp-500: #1a7dcc;
+  --color-ntp-600: #0b65b5;
+  --color-ntp-700: #0a5296;
+  --color-ntp-800: #0c447b;
+  --color-ntp-900: #0e3a66;
+  --color-ntp-950: #0a2545;
+
+  --color-flame-300: #ffd23a;
+  --color-flame-400: #ffa526;
+  --color-flame-500: #f7741f;
+  --color-flame-600: #e63a1e;
+}
+
+body {
+  @apply bg-ntp-50/60 text-slate-900 font-sans;
+}
+
+@theme {
+  --animate-fade-in: fade-in 150ms ease-out;
+  --animate-pop-in: pop-in 180ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes pop-in {
+    from { opacity: 0; transform: translateY(8px) scale(0.96); }
+    to { opacity: 1; transform: none; }
+  }
+}

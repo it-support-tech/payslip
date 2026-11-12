@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: payslip
+      POSTGRES_PASSWORD: payslip_dev
+      POSTGRES_DB: payslip
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payslip -d payslip"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://payslip:payslip_dev@db:5432/payslip
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules  
+      - next_cache:/app/.next
+    command: sh -c "npm ci && node scripts/setup-env.mjs && npm run dev -- -H 0.0.0.0"
+
+volumes:
+  pgdata:
+  node_modules:
+  next_cache:
