@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { JobState } from "@/lib/payslip-job";
 import type { WAState } from "@/lib/whatsapp";
+import { BASE_PATH } from "@/lib/base-path";
 
 const INITIAL_WA: WAState = { status: "idle", qr: null, pairingCode: null, loading: null, me: null };
 
@@ -25,14 +26,14 @@ export function useLiveStatus() {
     const connect = () => {
       clearTimeout(retry);
       es?.close();
-      const source = new EventSource("/api/whatsapp/events");
+      const source = new EventSource(`${BASE_PATH}/api/whatsapp/events`);
       es = source;
       source.onopen = () => setOnline(true);
       source.onerror = async () => {
         setOnline(false);
         if (source.readyState !== EventSource.CLOSED) return;
-        const me = await fetch("/api/settings").catch(() => null);
-        if (me?.status === 401) return window.location.assign("/login");
+        const me = await fetch(`${BASE_PATH}/api/settings`).catch(() => null);
+        if (me?.status === 401) return window.location.assign(`${BASE_PATH}/login`);
         retry = setTimeout(connect, 2000);
       };
       source.addEventListener("wa", (e) => setWa(JSON.parse((e as MessageEvent).data)));
@@ -65,7 +66,7 @@ export async function api<T = unknown>(url: string, init?: RequestInit & { json?
     body: json !== undefined ? JSON.stringify(json) : rest.body,
   });
   if (res.status === 401) {
-    window.location.assign("/login");
+    window.location.assign(`${BASE_PATH}/login`);
     throw new Error("ກະລຸນາ login ໃໝ່");
   }
   const body = await res.json().catch(() => ({}));

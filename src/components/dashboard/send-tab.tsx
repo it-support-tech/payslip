@@ -7,6 +7,7 @@ import type { PayslipStatus, PayslipView, PeriodSummary } from "@/lib/payslips";
 import { cn, formatMoney, monthPeriod, periodKey } from "@/lib/utils";
 import { api, download } from "./use-live-status";
 import { IconEye, IconEyeOff, IconSend, Legend, Spinner, Stat } from "./ui";
+import { BASE_PATH } from "@/lib/base-path";
 
 function periodOptions(periods: PeriodSummary[], selected: string | null) {
   const map = new Map<string, PeriodSummary | null>(
@@ -59,7 +60,7 @@ export function SendTab({
       setPayslips(
         (
           await api<{ payslips: PayslipView[] }>(
-            `/api/payslips?period=${encodeURIComponent(period)}`,
+            `${BASE_PATH}/api/payslips?period=${encodeURIComponent(period)}`,
           )
         ).payslips,
       );
@@ -131,7 +132,7 @@ export function SendTab({
     });
     if (!ok) return;
     try {
-      await api("/api/send", { method: "POST", json: { period } });
+      await api(`${BASE_PATH}/api/send`, { method: "POST", json: { period } });
     } catch (e) {
       onError((e as Error).message);
     }
@@ -166,7 +167,7 @@ export function SendTab({
     );
     if (!ok) return;
     try {
-      await api(`/api/payslips/${p.id}`, {
+      await api(`${BASE_PATH}/api/payslips/${p.id}`, {
         method: "PATCH",
         json: { delivered },
       });
@@ -186,7 +187,7 @@ export function SendTab({
       fd.append("file", f);
       fd.append("period", period ?? monthPeriod());
       fd.append("commit", "1");
-      const r = await api<ImportResult>("/api/payslips/import", {
+      const r = await api<ImportResult>(`${BASE_PATH}/api/payslips/import`, {
         method: "POST",
         body: fd,
       });
@@ -279,7 +280,7 @@ export function SendTab({
       <p className="-mt-4 text-right text-xs text-slate-500">
         <button
           onClick={() =>
-            download("/api/template").catch((err) => onError(err.message))
+            download(`${BASE_PATH}/api/template`).catch((err) => onError(err.message))
           }
           className="font-medium text-ntp-700 hover:underline"
         >
@@ -319,7 +320,7 @@ export function SendTab({
                 {jobForThis?.running ? (
                   <button
                     onClick={() =>
-                      api("/api/send", { method: "DELETE" }).catch((e) =>
+                      api(`${BASE_PATH}/api/send`, { method: "DELETE" }).catch((e) =>
                         onError(e.message),
                       )
                     }
@@ -390,7 +391,7 @@ export function SendTab({
                 <button
                   onClick={() =>
                     download(
-                      `/api/report?period=${encodeURIComponent(period)}&only=remaining`,
+                      `${BASE_PATH}/api/report?period=${encodeURIComponent(period)}&only=remaining`,
                     ).catch((e) => onError(e.message))
                   }
                   className="rounded-lg border border-ntp-200 bg-ntp-50 px-3 py-1.5 font-medium text-ntp-700 transition hover:bg-ntp-100"
@@ -400,7 +401,7 @@ export function SendTab({
                 <button
                   onClick={() =>
                     download(
-                      `/api/report?period=${encodeURIComponent(period)}`,
+                      `${BASE_PATH}/api/report?period=${encodeURIComponent(period)}`,
                     ).catch((e) => onError(e.message))
                   }
                   className="rounded-lg border border-slate-200 px-3 py-1.5 text-slate-600 transition hover:bg-slate-50"
@@ -700,7 +701,7 @@ function PayslipTable({
                   </td>
                   <td className="whitespace-nowrap px-5 py-3 text-right">
                     <a
-                      href={`/api/payslips/${p.id}/pdf`}
+                      href={`${BASE_PATH}/api/payslips/${p.id}/pdf`}
                       target="_blank"
                       rel="noreferrer"
                       className="text-xs font-medium text-ntp-700 hover:underline"

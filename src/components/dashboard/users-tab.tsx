@@ -6,6 +6,7 @@ import { Modal } from "@/components/modal";
 import type { UserView } from "@/lib/users";
 import { cn } from "@/lib/utils";
 import { api } from "./use-live-status";
+import { BASE_PATH } from "@/lib/base-path";
 
 export function UsersTab({ currentUserId, onError }: { currentUserId: string; onError: (msg: string) => void }) {
   const confirm = useConfirm();
@@ -15,7 +16,7 @@ export function UsersTab({ currentUserId, onError }: { currentUserId: string; on
 
   const load = useCallback(async () => {
     try {
-      setUsers((await api<{ users: UserView[] }>("/api/users")).users);
+      setUsers((await api<{ users: UserView[] }>(`${BASE_PATH}/api/users`)).users);
     } catch (e) {
       onError((e as Error).message);
     }
@@ -27,7 +28,7 @@ export function UsersTab({ currentUserId, onError }: { currentUserId: string; on
 
   const patch = async (u: UserView, body: Record<string, unknown>) => {
     try {
-      const r = await api<{ tempPassword?: string }>(`/api/users/${u.id}`, { method: "PATCH", json: body });
+      const r = await api<{ tempPassword?: string }>(`${BASE_PATH}/api/users/${u.id}`, { method: "PATCH", json: body });
       if (r.tempPassword) setIssued({ username: u.username, password: r.tempPassword });
       await load();
     } catch (e) {
@@ -204,7 +205,7 @@ function CreateUserModal({
     setBusy(true);
     setError(null);
     try {
-      const r = await api<{ user: UserView; tempPassword: string }>("/api/users", {
+      const r = await api<{ user: UserView; tempPassword: string }>(`${BASE_PATH}/api/users`, {
         method: "POST",
         json: { username, displayName, role },
       });

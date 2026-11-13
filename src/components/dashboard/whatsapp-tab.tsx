@@ -5,6 +5,7 @@ import { useConfirm } from "@/components/confirm-dialog";
 import type { WAState } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
 import { IconCheck, Spinner } from "./ui";
+import { BASE_PATH } from "@/lib/base-path";
 
 // WhatsApp ປ່ຽນ QR ທຸກ ~20 ວິນາທີ; ຖ້າບໍ່ໄດ້ອັນໃໝ່ເກີນເວລານີ້ ຖືວ່າ QR ໝົດອາຍຸ
 const QR_STALE_MS = 45_000;
@@ -30,7 +31,7 @@ export function WhatsAppCard({ wa, onReconnect }: { wa: WAState; onReconnect: ()
   const requestCode = async () => {
     setBusy(true);
     setPairError(null);
-    const res = await fetch("/api/whatsapp/pair", {
+    const res = await fetch(`${BASE_PATH}/api/whatsapp/pair`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ phone: pairPhone }),
@@ -58,7 +59,7 @@ export function WhatsAppCard({ wa, onReconnect }: { wa: WAState; onReconnect: ()
     });
     if (!ok) return;
     setBusy(true);
-    await fetch("/api/whatsapp/logout", { method: "POST" });
+    await fetch(`${BASE_PATH}/api/whatsapp/logout`, { method: "POST" });
     setBusy(false);
   };
 
@@ -71,7 +72,7 @@ export function WhatsAppCard({ wa, onReconnect }: { wa: WAState; onReconnect: ()
     });
     if (!ok) return;
     setBusy(true);
-    await fetch("/api/whatsapp/reset", { method: "POST" });
+    await fetch(`${BASE_PATH}/api/whatsapp/reset`, { method: "POST" });
     setBusy(false);
   };
 

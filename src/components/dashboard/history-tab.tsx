@@ -3,6 +3,7 @@
 import { useConfirm } from "@/components/confirm-dialog";
 import type { PeriodSummary } from "@/lib/payslips";
 import { api, download } from "./use-live-status";
+import { BASE_PATH } from "@/lib/base-path";
 
 export function HistoryTab({
   periods,
@@ -28,7 +29,7 @@ export function HistoryTab({
     });
     if (!ok) return;
     try {
-      await api(`/api/periods?period=${encodeURIComponent(p.period)}`, { method: "DELETE" });
+      await api(`${BASE_PATH}/api/periods?period=${encodeURIComponent(p.period)}`, { method: "DELETE" });
       await onChanged();
     } catch (e) {
       onError((e as Error).message);
@@ -86,7 +87,7 @@ export function HistoryTab({
                   </button>
                   <button
                     onClick={() =>
-                      download(`/api/report?period=${encodeURIComponent(p.period)}`).catch((e) => onError(e.message))
+                      download(`${BASE_PATH}/api/report?period=${encodeURIComponent(p.period)}`).catch((e) => onError(e.message))
                     }
                     className="ml-4 text-slate-600 hover:underline"
                   >

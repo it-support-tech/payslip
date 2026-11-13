@@ -14,6 +14,7 @@ import { SendTab } from "./send-tab";
 import { api, useLiveStatus } from "./use-live-status";
 import { UsersTab } from "./users-tab";
 import { WhatsAppCard } from "./whatsapp-tab";
+import { BASE_PATH } from "@/lib/base-path";
 
 type Tab = "send" | "history" | "message" | "whatsapp" | "users";
 
@@ -36,7 +37,7 @@ function Shell({ user }: { user: SessionUser }) {
 
   const loadPeriods = useCallback(async () => {
     try {
-      const list = (await api<{ periods: PeriodSummary[] }>("/api/periods")).periods;
+      const list = (await api<{ periods: PeriodSummary[] }>(`${BASE_PATH}/api/periods`)).periods;
       setPeriods(list);
       setPeriod((cur) => cur ?? list[0]?.period ?? monthPeriod());
     } catch (e) {
@@ -67,7 +68,7 @@ function Shell({ user }: { user: SessionUser }) {
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3">
           <div className="flex min-w-0 items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt={COMPANY.shortName} className="h-11 w-11 shrink-0 object-contain drop-shadow" />
+            <img src={`${BASE_PATH}/logo.png`} alt={COMPANY.shortName} className="h-11 w-11 shrink-0 object-contain drop-shadow" />
             <div className="min-w-0">
               <h1 className="truncate text-lg font-semibold leading-tight">ລະບົບສົ່ງໃບແຈ້ງເງິນເດືອນ</h1>
               <p className="truncate text-xs text-ntp-100">{COMPANY.name}</p>
@@ -172,8 +173,8 @@ function UserMenu({ user }: { user: SessionUser }) {
   }, [open]);
 
   const logout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    window.location.assign("/login");
+    await fetch(`${BASE_PATH}/api/auth/logout`, { method: "POST" });
+    window.location.assign(`${BASE_PATH}/login`);
   };
 
   return (

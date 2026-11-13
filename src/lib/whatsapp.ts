@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import QRCode from "qrcode";
 import { Client, LocalAuth, MessageMedia } from "whatsapp-web.js";
+import { HttpError } from "./auth";
 
 const CLIENT_ID = "hr-payslip";
 const SESSION_DIR = path.join(process.cwd(), ".wwebjs_auth", `session-${CLIENT_ID}`);
@@ -135,7 +136,7 @@ class WhatsAppService extends EventEmitter {
   }
 
   async requestPairingCode(phone: string): Promise<string> {
-    if (!this.client || this.state.status !== "qr") throw new Error("ກະລຸນາລໍຖ້າໃຫ້ QR Code ຂຶ້ນກ່ອນ");
+    if (!this.client || this.state.status !== "qr") throw new HttpError(409, "ກະລຸນາລໍຖ້າໃຫ້ QR Code ຂຶ້ນກ່ອນ");
     const code = await this.client.requestPairingCode(phone, true);
     this.setState({ pairingCode: code });
     return code;
@@ -146,7 +147,7 @@ class WhatsAppService extends EventEmitter {
   }
 
   async resolveChatId(phone: string): Promise<string | null> {
-    if (!this.client) throw new Error("WhatsApp ຍັງບໍ່ໄດ້ເຊື່ອມຕໍ່");
+    if (!this.client) throw new HttpError(409, "WhatsApp ຍັງບໍ່ໄດ້ເຊື່ອມຕໍ່");
     const id = await this.client.getNumberId(phone);
     return id?._serialized ?? null;
   }

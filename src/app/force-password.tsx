@@ -2,11 +2,12 @@
 
 import { PasswordForm } from "@/components/password-form";
 import { COMPANY } from "@/config";
+import { BASE_PATH } from "@/lib/base-path";
 
 export function ForcePasswordChange({ displayName }: { displayName: string }) {
   const logout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    window.location.assign("/login");
+    await fetch(`${BASE_PATH}/api/auth/logout`, { method: "POST" });
+    window.location.assign(`${BASE_PATH}/login`);
   };
 
   return (
@@ -16,13 +17,13 @@ export function ForcePasswordChange({ displayName }: { displayName: string }) {
         <div className="p-8">
           <div className="mb-6 flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt={COMPANY.shortName} className="h-12 w-12 object-contain" />
+            <img src={`${BASE_PATH}/logo.png`} alt={COMPANY.shortName} className="h-12 w-12 object-contain" />
             <div>
               <h1 className="text-lg font-bold text-slate-900">ຕັ້ງລະຫັດຜ່ານໃໝ່</h1>
               <p className="text-sm text-slate-500">ສະບາຍດີ — ກະລຸນາປ່ຽນລະຫັດກ່ອນໃຊ້ງານ</p>
             </div>
           </div>
-          <PasswordForm submitText="ບັນທຶກ ແລະ ເຂົ້າສູ່ລະບົບ" onDone={() => window.location.assign("/")} />
+          <PasswordForm submitText="ບັນທຶກ ແລະ ເຂົ້າສູ່ລະບົບ" onDone={() => window.location.assign(`${BASE_PATH}/`)} />
           <button onClick={logout} className="mt-4 w-full text-center text-xs text-slate-400 hover:text-slate-600">
             ອອກຈາກລະບົບ
           </button>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { BASE_PATH } from "@/lib/base-path";
 
 const rules = [
   { test: (p: string) => p.length >= 8, label: "ຢ່າງໜ້ອຍ 8 ຕົວອັກສອນ" },
@@ -24,7 +25,7 @@ export function PasswordForm({ onDone, submitText = "ປ່ຽນລະຫັດ
     if (!valid) return;
     setBusy(true);
     setError(null);
-    const res = await fetch("/api/auth/password", {
+    const res = await fetch(`${BASE_PATH}/api/auth/password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ currentPassword: current, newPassword: next }),

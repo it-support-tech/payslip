@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { BASE_PATH } from "@/lib/base-path";
 
 export function LoginForm() {
   const [username, setUsername] = useState("");
@@ -14,12 +15,12 @@ export function LoginForm() {
     e.preventDefault();
     setBusy(true);
     setError(null);
-    const res = await fetch("/api/auth/login", {
+    const res = await fetch(`${BASE_PATH}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
-    if (res.ok) return window.location.assign("/");
+    if (res.ok) return window.location.assign(`${BASE_PATH}/`);
     setError((await res.json().catch(() => ({}))).error ?? "ເຂົ້າສູ່ລະບົບບໍ່ສຳເລັດ");
     setBusy(false);
   };

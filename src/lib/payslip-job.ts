@@ -6,6 +6,7 @@ import { generatePayslipPDF } from "./payslip-pdf";
 import { claimForSending, markFailed, markSent, recoverStuckSending, sendableIds } from "./payslips";
 import { getMessageTemplate } from "./settings";
 import { whatsapp } from "./whatsapp";
+import { HttpError } from "./auth";
 
 export type ResultStatus = "pending" | "sending" | "sent" | "failed" | "skipped";
 
@@ -86,12 +87,12 @@ class PayslipJobRunner extends EventEmitter {
    * ໃບທີ່ສົ່ງແລ້ວຈະບໍ່ຖືກເລືອກ — ຢາກສົ່ງຊ້ຳ ຕ້ອງເອົາຕິກ "ສົ່ງແລ້ວ" ອອກກ່ອນ.
    */
   async start(period: string, user: { id: string; displayName: string }, ids?: string[]) {
-    if (this.state.running) throw new Error("ກຳລັງສົ່ງຢູ່ ກະລຸນາລໍຖ້າໃຫ້ສຳເລັດກ່ອນ");
-    if (!whatsapp.isReady()) throw new Error("WhatsApp ຍັງບໍ່ໄດ້ເຊື່ອມຕໍ່");
+    if (this.state.running) throw new HttpError(409, "ກຳລັງສົ່ງຢູ່ ກະລຸນາລໍຖ້າໃຫ້ສຳເລັດກ່ອນ");
+    if (!whatsapp.isReady()) throw new HttpError(409, "WhatsApp ຍັງບໍ່ໄດ້ເຊື່ອມຕໍ່");
 
     await recoverStuckSending(); // ບໍ່ມີ job run ຢູ່ → 'sending' ທີ່ເຫຼືອແມ່ນຄ້າງ
     const targets = await sendableIds(period, ids);
-    if (targets.length === 0) throw new Error("ບໍ່ມີໃບທີ່ຕ້ອງສົ່ງ — ທຸກຄົນໄດ້ຮັບແລ້ວ");
+    if (targets.length === 0) throw new HttpError(409, "ບໍ່ມີໃບທີ່ຕ້ອງສົ່ງ — ທຸກຄົນໄດ້ຮັບແລ້ວ");
 
     this.cancelRequested = false;
     this.state = {

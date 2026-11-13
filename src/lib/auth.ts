@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { audit } from "./audit";
 import { hashPassword, randomToken, sha256, verifyPassword } from "./crypto";
+import { BASE_PATH } from "./base-path";
 import { query } from "./db";
 
 export const SESSION_COOKIE = "ntp_session";
@@ -110,13 +111,13 @@ export function setSessionCookie(res: NextResponse, token: string) {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
-    path: "/",
+    path: BASE_PATH || "/",
     maxAge: SESSION_TTL_MS / 1000,
   });
 }
 
 export function clearSessionCookie(res: NextResponse) {
-  res.cookies.set(SESSION_COOKIE, "", { httpOnly: true, path: "/", maxAge: 0 });
+  res.cookies.set(SESSION_COOKIE, "", { httpOnly: true, path: BASE_PATH || "/", maxAge: 0 });
 }
 
 export async function getSessionUser(): Promise<SessionUser | null> {
@@ -164,8 +165,7 @@ export function route<C = unknown>(fn: Handler<C>): Handler<C> {
     } catch (err) {
       if (err instanceof HttpError) return NextResponse.json({ error: err.message }, { status: err.status });
       console.error(err);
-      const message = err instanceof Error ? err.message : "ເກີດຂໍ້ຜິດພາດ";
-      return NextResponse.json({ error: message }, { status: 500 });
+      return NextResponse.json({ error: "ເກີດຂໍ້ຜິດພາດໃນລະບົບ — ກະລຸນາລອງໃໝ່ ຫຼື ຕິດຕໍ່ admin" }, { status: 500 });
     }
   };
 }

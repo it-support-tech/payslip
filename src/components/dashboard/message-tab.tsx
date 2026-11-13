@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { MAX_MESSAGE_LENGTH, MESSAGE_PLACEHOLDERS, type MessageFields, renderMessage } from "@/lib/message";
+import { BASE_PATH } from "@/lib/base-path";
 
 // ຂໍ້ມູນຕົວຢ່າງສຳລັບ preview ຕອນຍັງບໍ່ໄດ້ອັບໂຫລດໄຟລ໌
 const SAMPLE_EMPLOYEE: MessageFields = {
@@ -22,7 +23,7 @@ export function MessageTemplateCard({ sample }: { sample?: MessageFields }) {
   const ref = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    fetch("/api/settings")
+    fetch(`${BASE_PATH}/api/settings`)
       .then((r) => r.json())
       .then((j) => {
         setSaved(j.messageTemplate);
@@ -49,7 +50,7 @@ export function MessageTemplateCard({ sample }: { sample?: MessageFields }) {
   const save = async () => {
     setStatus("saving");
     setErr(null);
-    const res = await fetch("/api/settings", {
+    const res = await fetch(`${BASE_PATH}/api/settings`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ messageTemplate: text }),
