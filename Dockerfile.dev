@@ -1,6 +1,5 @@
 FROM node:24-bookworm-slim
 
-# Puppeteer ບໍ່ມີ Chrome ສຳລັບ Linux arm64 (Apple Silicon) → ໃຊ້ chromium ຂອງ Debian ແທນ
 RUN apt-get update \
   && apt-get install -y --no-install-recommends chromium fonts-noto-core ca-certificates \
   && rm -rf /var/lib/apt/lists/*

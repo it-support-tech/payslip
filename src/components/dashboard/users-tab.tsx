@@ -242,8 +242,8 @@ function CreateUserModal({
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium text-slate-700">ສິດ</span>
           <select value={role} onChange={(e) => setRole(e.target.value as "hr" | "admin")} className={input}>
-            <option value="hr">hr — ນຳເຂົ້າ ແລະ ສົ່ງ payslip</option>
-            <option value="admin">admin — ທຸກຢ່າງ + ຈັດການຜູ້ໃຊ້</option>
+            <option value="hr">hr</option>
+            <option value="admin">admin</option>
           </select>
         </label>
         {error && <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p>}
