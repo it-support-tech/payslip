@@ -9,5 +9,5 @@ try {
   await importLegacySettings();
   await recoverStuckSending();
 } catch (err) {
-  console.error("[startup] ເຊື່ອມຕໍ່ຖານຂໍ້ມູນບໍ່ໄດ້ — ກວດ DATABASE_URL ແລະ ວ່າ Postgres run ຢູ່ບໍ່", err);
+  console.error("[startup]", err);
 }
