@@ -148,14 +148,28 @@ class WhatsAppService extends EventEmitter {
 
   async resolveChatId(phone: string): Promise<string | null> {
     if (!this.client) throw new HttpError(409, "WhatsApp ຍັງບໍ່ໄດ້ເຊື່ອມຕໍ່");
-    const id = await this.client.getNumberId(phone);
+    const client = this.client;
+    const id = await withCommsRetry(() => client.getNumberId(phone));
     return id?._serialized ?? null;
   }
 
   async sendPdf(chatId: string, pdf: Buffer, filename: string, caption: string) {
     if (!this.client || !this.isReady()) throw new Error("WhatsApp ຍັງບໍ່ພ້ອມ");
     const media = new MessageMedia("application/pdf", pdf.toString("base64"), filename);
-    await this.client.sendMessage(chatId, media, { caption, sendSeen: false });
+    const client = this.client;
+    await withCommsRetry(() => client.sendMessage(chatId, media, { caption, sendSeen: false }));
+  }
+}
+
+async function withCommsRetry<T>(fn: () => Promise<T>, tries = 5): Promise<T> {
+  for (let i = 1; ; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (i >= tries || !/startComms|comms/i.test(msg)) throw err;
+      await new Promise((r) => setTimeout(r, 3000 * i));
+    }
   }
 }
 
