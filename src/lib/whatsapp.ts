@@ -81,7 +81,7 @@ class WhatsAppService extends EventEmitter {
       });
     });
     client.on("disconnected", async (reason) => {
-      if (this.loggingOut) return; // logout() ຈັດການເອງ
+      if (this.loggingOut) return;
       this.setState({ status: "disconnected", qr: null, me: null, error: String(reason) });
       await this.destroy();
       setTimeout(() => this.init().catch(() => {}), 3000);
@@ -90,6 +90,7 @@ class WhatsAppService extends EventEmitter {
     this.initPromise = clearProfileLocks()
       .then(() => client.initialize())
       .catch((err: Error) => {
+        client.destroy().catch(() => {});
         this.setState({ status: "error", error: err.message });
         this.initPromise = null;
         this.client = null;
@@ -114,7 +115,6 @@ class WhatsAppService extends EventEmitter {
     }
   }
 
-  /** Logout ຈາກ WhatsApp + ລຶບ session ອອກໝົດ → ຂຶ້ນ QR ໃໝ່ທັນທີ */
   async logout() {
     this.loggingOut = true;
     try {

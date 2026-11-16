@@ -1,4 +1,3 @@
-// ສ້າງ .env.local ພ້ອມ key ແບບສຸ່ມ (ຖ້າຍັງບໍ່ມີ). ໃຊ້: npm run setup
 import crypto from "node:crypto";
 import fs from "node:fs";
 

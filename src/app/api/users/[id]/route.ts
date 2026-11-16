@@ -8,7 +8,6 @@ export const dynamic = "force-dynamic";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-/** ແກ້ຊື່ / ສິດ / ເປີດ-ປິດບັນຊີ / ປົດລັອກ / reset ລະຫັດ (ສະເພາະ admin) */
 export const PATCH = route<Ctx>(async (req, { params }) => {
   const admin = await requireUser(req, { role: "admin" });
   const { id } = await params;

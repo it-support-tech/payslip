@@ -4,7 +4,6 @@ import { changePassword, HttpError, requireUser, route, setSessionCookie } from 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** ປ່ຽນລະຫັດຜ່ານຂອງຕົນເອງ (ຕ້ອງໃສ່ລະຫັດປັດຈຸບັນ). ຈະອອກຈາກລະບົບທຸກເຄື່ອງອື່ນ */
 export const POST = route(async (req) => {
   const user = await requireUser(req, { allowMustChange: true });
   const { currentPassword, newPassword } = await req.json().catch(() => ({}));

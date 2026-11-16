@@ -7,12 +7,6 @@ import { BASE_PATH } from "@/lib/base-path";
 
 const INITIAL_WA: WAState = { status: "idle", qr: null, pairingCode: null, loading: null, me: null };
 
-/**
- * ສະຖານະ WhatsApp + job ສົ່ງ ແບບ real-time (SSE).
- * ຖ້າຫຼຸດ (server restart / recompile) EventSource ອາດຢຸດຖາວອນ ແລະ QR ຄ້າງເປັນອັນເກົ່າ
- * → ເຊື່ອມຕໍ່ໃໝ່ເອງ, ແລະ ເຊື່ອມຕໍ່ໃໝ່ທຸກຄັ້ງທີ່ກັບມາເບິ່ງ tab ນີ້.
- * ຖ້າ session ໝົດອາຍຸ (401) → ກັບໄປໜ້າ login.
- */
 export function useLiveStatus() {
   const [wa, setWa] = useState<WAState>(INITIAL_WA);
   const [job, setJob] = useState<JobState | null>(null);
@@ -57,7 +51,6 @@ export function useLiveStatus() {
   return { wa, job, online, reconnect: () => reconnectRef.current() };
 }
 
-/** fetch JSON + ໂຍນ error ເປັນຂໍ້ຄວາມຈາກ server; 401 → ກັບໄປ login */
 export async function api<T = unknown>(url: string, init?: RequestInit & { json?: unknown }): Promise<T> {
   const { json, ...rest } = init ?? {};
   const res = await fetch(url, {
@@ -74,7 +67,6 @@ export async function api<T = unknown>(url: string, init?: RequestInit & { json?
   return body as T;
 }
 
-/** ດາວໂຫລດໄຟລ໌ຈາກ API (ໃຊ້ຊື່ໄຟລ໌ຈາກ Content-Disposition) */
 export async function download(url: string) {
   const res = await fetch(url);
   if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "ດາວໂຫລດບໍ່ສຳເລັດ");
@@ -83,5 +75,5 @@ export async function download(url: string) {
   a.href = URL.createObjectURL(await res.blob());
   a.download = name;
   a.click();
-  URL.revokeObjectURL(a.href);
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }

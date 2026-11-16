@@ -9,7 +9,6 @@ export const dynamic = "force-dynamic";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-/** ຕິກ / ເອົາຕິກ "ສົ່ງແລ້ວ" — ເອົາຕິກອອກ = ອະນຸຍາດໃຫ້ສົ່ງຄືນໄດ້ */
 export const PATCH = route<Ctx>(async (req, { params }) => {
   const user = await requireUser(req);
   const { id } = await params;

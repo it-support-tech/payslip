@@ -17,7 +17,6 @@ type ConfirmFn = (opts: ConfirmOptions) => Promise<boolean>;
 
 const ConfirmContext = createContext<ConfirmFn | null>(null);
 
-/** ໃຊ້ແທນ window.confirm(): `if (!(await confirm({ title: "..." }))) return;` */
 export function useConfirm() {
   const ctx = useContext(ConfirmContext);
   if (!ctx) throw new Error("useConfirm ຕ້ອງໃຊ້ພາຍໃນ <ConfirmProvider>");

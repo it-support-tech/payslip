@@ -15,6 +15,6 @@ export function monthPeriod(offset = 0, from = new Date()) {
 }
 
 export function periodKey(p: string) {
-  const [m, y] = p.split("/").map(Number);
-  return y * 100 + m;
+  const m = p.match(/^(\d{1,2})\/(\d{4})$/);
+  return m ? Number(m[2]) * 100 + Number(m[1]) : 0;
 }

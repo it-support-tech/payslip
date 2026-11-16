@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import { IconCheck, Spinner } from "./ui";
 import { BASE_PATH } from "@/lib/base-path";
 
-// WhatsApp ປ່ຽນ QR ທຸກ ~20 ວິນາທີ; ຖ້າບໍ່ໄດ້ອັນໃໝ່ເກີນເວລານີ້ ຖືວ່າ QR ໝົດອາຍຸ
 const QR_STALE_MS = 45_000;
 
 export function WhatsAppCard({ wa, onReconnect }: { wa: WAState; onReconnect: () => void }) {
@@ -138,7 +137,6 @@ export function WhatsAppCard({ wa, onReconnect }: { wa: WAState; onReconnect: ()
             {mode === "qr" ? (
               <>
                 <div className="relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={wa.qr}
                     alt="WhatsApp QR Code"

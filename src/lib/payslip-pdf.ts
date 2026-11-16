@@ -13,7 +13,6 @@ const FONTS = {
 };
 const LOGO_PATH = path.join(process.cwd(), COMPANY.logo);
 
-// NTP theme + ສີເທົາສຳລັບຂໍ້ຄວາມ
 const C = {
   ...NTP_COLORS,
   ink: "#0f172a",
@@ -35,10 +34,6 @@ const today = () => {
 type Doc = PDFKit.PDFDocument;
 type TextOpts = { size?: number; bold?: boolean; color?: string; align?: "left" | "right" | "center"; width?: number };
 
-/**
- * Noto Sans Lao ບໍ່ມີຕົວເລກ/ຕົວອັກສອນລາຕິນ, ຈຶ່ງແຍກຂໍ້ຄວາມເປັນ run ຕາມ script
- * ແລ້ວໃຊ້ font ທີ່ເໝາະສົມກັບແຕ່ລະ run.
- */
 function splitRuns(text: string): { lao: boolean; text: string }[] {
   const runs: { lao: boolean; text: string }[] = [];
   for (const ch of text) {
@@ -71,7 +66,6 @@ function text(doc: Doc, value: string, x: number, y: number, opts: TextOpts = {}
   doc.fillColor(opts.color ?? C.ink).fontSize(size);
   for (const r of splitRuns(value)) {
     doc.font(fontFor(r.lao, opts.bold));
-    // ປັບ baseline ໃຫ້ 2 font ຢູ່ແຖວດຽວກັນ
     doc.text(r.text, cx, y + (r.lao ? 0 : size * 0.05), { lineBreak: false });
     cx += doc.widthOfString(r.text);
   }

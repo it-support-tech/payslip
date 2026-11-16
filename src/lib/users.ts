@@ -38,7 +38,6 @@ const toView = (r: Row): UserView => ({
 
 export const listUsers = async () => (await query<Row>("SELECT * FROM users ORDER BY created_at")).map(toView);
 
-/** ລະຫັດຊົ່ວຄາວ (ອ່ານງ່າຍ ບໍ່ມີຕົວທີ່ສັບສົນ ເຊັ່ນ 0/O, 1/l) — ຜູ້ໃຊ້ຕ້ອງປ່ຽນຕອນ login */
 export function tempPassword() {
   const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
   const digits = "23456789";
@@ -77,7 +76,6 @@ export async function updateUser(
   const [target] = await query<Row>("SELECT * FROM users WHERE id = $1", [id]);
   if (!target) throw new HttpError(404, "ບໍ່ພົບຜູ້ໃຊ້");
 
-  // ກັນບໍ່ໃຫ້ລະບົບບໍ່ເຫຼືອ admin ທີ່ໃຊ້ງານໄດ້
   const demoting = (patch.role && patch.role !== "admin") || patch.isActive === false;
   if (target.role === "admin" && demoting) {
     const [{ count }] = await query<{ count: string }>(

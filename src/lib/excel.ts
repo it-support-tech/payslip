@@ -24,7 +24,6 @@ const toText = (v: unknown): string => {
   return String(v ?? "").trim();
 };
 
-
 export function normalizePeriod(raw: string): string {
   const s = String(raw ?? "").trim();
   let m = s.match(/^(\d{1,2})[\/\-.](\d{4})$/);

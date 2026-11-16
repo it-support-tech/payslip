@@ -3,7 +3,6 @@ import { NextResponse, type NextRequest } from "next/server";
 const SESSION_COOKIE = "ntp_session";
 const PUBLIC = ["/login", "/api/auth/login", "/logo.png", "/icon.png"];
 
-// ກວດແຕ່ວ່າມີ cookie ບໍ່ (Edge runtime ເຂົ້າຖານຂໍ້ມູນບໍ່ໄດ້) — ການກວດ session ແທ້ເຮັດໃນແຕ່ລະ route
 function loginUrl(req: NextRequest) {
   const url = req.nextUrl.clone();
   url.pathname = "/login";

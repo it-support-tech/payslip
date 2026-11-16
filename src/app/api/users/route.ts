@@ -11,7 +11,6 @@ export const GET = route(async (req) => {
   return NextResponse.json({ users: await listUsers() });
 });
 
-/** ສ້າງຜູ້ໃຊ້ໃໝ່ — ຄືນລະຫັດຊົ່ວຄາວ ໃຫ້ admin ແຈ້ງຜູ້ໃຊ້ (ຈະຖືກບັງຄັບປ່ຽນຕອນ login) */
 export const POST = route(async (req) => {
   const admin = await requireUser(req, { role: "admin" });
   const body = await req.json().catch(() => ({}));

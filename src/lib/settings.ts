@@ -18,7 +18,6 @@ export async function saveMessageTemplate(value: string, userId: string) {
   );
 }
 
-/** ຍ້າຍຂໍ້ຄວາມທີ່ HR ເຄີຍບັນທຶກໃນ data/settings.json (ລະບົບເກົ່າ) ເຂົ້າຖານຂໍ້ມູນ — ຄັ້ງດຽວ */
 export async function importLegacySettings() {
   const file = path.join(process.cwd(), "data", "settings.json");
   try {
@@ -30,6 +29,5 @@ export async function importLegacySettings() {
     ]);
     if (rows.length) console.log("[settings] ຍ້າຍຂໍ້ຄວາມ WhatsApp ຈາກ data/settings.json ເຂົ້າຖານຂໍ້ມູນແລ້ວ");
   } catch {
-    /* ບໍ່ມີໄຟລ໌ເກົ່າ */
   }
 }

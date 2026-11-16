@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { MAX_MESSAGE_LENGTH, MESSAGE_PLACEHOLDERS, type MessageFields, renderMessage } from "@/lib/message";
 import { BASE_PATH } from "@/lib/base-path";
+import { Skeleton } from "./ui";
+import { api } from "./use-live-status";
 
-// ຂໍ້ມູນຕົວຢ່າງສຳລັບ preview ຕອນຍັງບໍ່ໄດ້ອັບໂຫລດໄຟລ໌
 const SAMPLE_EMPLOYEE: MessageFields = {
   employeeId: "NTP/0001",
   name: "ສົມສັກ ພົມມະວົງ",
@@ -20,17 +21,18 @@ export function MessageTemplateCard({ sample }: { sample?: MessageFields }) {
   const [defaultText, setDefaultText] = useState("");
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [err, setErr] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    fetch(`${BASE_PATH}/api/settings`)
-      .then((r) => r.json())
+    api<{ messageTemplate: string; defaultTemplate: string }>(`${BASE_PATH}/api/settings`)
       .then((j) => {
         setSaved(j.messageTemplate);
         setText(j.messageTemplate);
         setDefaultText(j.defaultTemplate);
+        setLoaded(true);
       })
-      .catch(() => setErr("ໂຫລດຂໍ້ຄວາມບໍ່ສຳເລັດ"));
+      .catch(() => setErr("ໂຫລດຂໍ້ຄວາມບໍ່ສຳເລັດ — ກະລຸນາ refresh ໜ້າເວັບ"));
   }, []);
 
   const dirty = text !== saved;
@@ -50,14 +52,11 @@ export function MessageTemplateCard({ sample }: { sample?: MessageFields }) {
   const save = async () => {
     setStatus("saving");
     setErr(null);
-    const res = await fetch(`${BASE_PATH}/api/settings`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messageTemplate: text }),
-    });
-    const j = await res.json();
-    if (!res.ok) {
-      setErr(j.error);
+    let j: { messageTemplate: string };
+    try {
+      j = await api(`${BASE_PATH}/api/settings`, { method: "PUT", json: { messageTemplate: text } });
+    } catch (e) {
+      setErr((e as Error).message);
       setStatus("idle");
       return;
     }
@@ -90,6 +89,9 @@ export function MessageTemplateCard({ sample }: { sample?: MessageFields }) {
         ))}
       </div>
 
+      {!loaded && !err ? (
+        <Skeleton className="mt-3 h-44" />
+      ) : (
       <textarea
         ref={ref}
         value={text}
@@ -98,6 +100,7 @@ export function MessageTemplateCard({ sample }: { sample?: MessageFields }) {
         maxLength={MAX_MESSAGE_LENGTH}
         className="mt-3 w-full resize-y rounded-lg border border-slate-200 px-3 py-2 text-sm leading-relaxed outline-none focus:border-ntp-500 focus:ring-2 focus:ring-ntp-100"
       />
+      )}
 
       <p className="mt-3 mb-1 text-xs font-medium text-slate-500">
         ຕົວຢ່າງ{sample ? ` (${sample.name})` : ""}:
@@ -127,7 +130,7 @@ export function MessageTemplateCard({ sample }: { sample?: MessageFields }) {
           )}
           <button
             onClick={save}
-            disabled={!dirty || !text.trim() || status === "saving"}
+            disabled={!loaded || !dirty || !text.trim() || status === "saving"}
             className="rounded-lg bg-ntp-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-ntp-700 disabled:bg-slate-300"
           >
             {status === "saving" ? "ກຳລັງບັນທຶກ..." : status === "saved" ? "✓ ບັນທຶກແລ້ວ" : "ບັນທຶກ"}

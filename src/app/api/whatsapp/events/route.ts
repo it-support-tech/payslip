@@ -5,7 +5,6 @@ import { whatsapp, type WAState } from "@/lib/whatsapp";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** Server-Sent Events: ສົ່ງສະຖານະ WhatsApp (QR / Connected) ແລະ progress ການສົ່ງແບບ real-time */
 export async function GET(req: Request) {
   try {
     await requireUser(req);
@@ -13,7 +12,6 @@ export async function GET(req: Request) {
     const status = err instanceof HttpError ? err.status : 401;
     return new Response("unauthorized", { status });
   }
-  // ເລີ່ມ WhatsApp client ຄັ້ງທຳອິດທີ່ມີຄົນເປີດ Dashboard
   whatsapp.init().catch(() => {});
 
   const encoder = new TextEncoder();
@@ -48,7 +46,6 @@ export async function GET(req: Request) {
         try {
           controller.close();
         } catch {
-          /* closed */
         }
       });
     },

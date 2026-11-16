@@ -5,12 +5,13 @@ import { useConfirm } from "@/components/confirm-dialog";
 import { Modal } from "@/components/modal";
 import type { UserView } from "@/lib/users";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "./ui";
 import { api } from "./use-live-status";
 import { BASE_PATH } from "@/lib/base-path";
 
 export function UsersTab({ currentUserId, onError }: { currentUserId: string; onError: (msg: string) => void }) {
   const confirm = useConfirm();
-  const [users, setUsers] = useState<UserView[]>([]);
+  const [users, setUsers] = useState<UserView[] | null>(null);
   const [creating, setCreating] = useState(false);
   const [issued, setIssued] = useState<{ username: string; password: string } | null>(null);
 
@@ -81,7 +82,15 @@ export function UsersTab({ currentUserId, onError }: { currentUserId: string; on
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
-          {users.map((u) => {
+          {!users &&
+            Array.from({ length: 3 }, (_, i) => (
+              <tr key={i}>
+                <td colSpan={5} className="px-5 py-3">
+                  <Skeleton className="h-9" />
+                </td>
+              </tr>
+            ))}
+          {users?.map((u) => {
             const self = u.id === currentUserId;
             return (
               <tr key={u.id} className={cn(!u.isActive && "bg-slate-50 text-slate-400")}>

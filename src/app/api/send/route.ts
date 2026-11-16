@@ -10,11 +10,7 @@ export const POST = route(async (req) => {
   const { period, ids } = await req.json().catch(() => ({}));
   if (!period) throw new HttpError(400, "ກະລຸນາເລືອກງວດ");
   const list = Array.isArray(ids) && ids.length ? ids.map(String) : undefined;
-  try {
-    return NextResponse.json(await payslipJob.start(String(period), user, list), { status: 202 });
-  } catch (err) {
-    throw new HttpError(400, err instanceof Error ? err.message : "ເລີ່ມສົ່ງບໍ່ໄດ້");
-  }
+  return NextResponse.json(await payslipJob.start(String(period), user, list), { status: 202 });
 });
 
 export const DELETE = route(async (req) => {

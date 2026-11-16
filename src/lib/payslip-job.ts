@@ -11,7 +11,7 @@ import { HttpError } from "./auth";
 export type ResultStatus = "pending" | "sending" | "sent" | "failed" | "skipped";
 
 export interface JobResult {
-  id: string; // payslip id
+  id: string;
   name: string;
   status: ResultStatus;
   error?: string;
@@ -82,15 +82,11 @@ class PayslipJobRunner extends EventEmitter {
     if (this.state.running) this.cancelRequested = true;
   }
 
-  /**
-   * ເລີ່ມສົ່ງໃບທີ່ຍັງບໍ່ໄດ້ສົ່ງ (pending / failed) ຂອງງວດນີ້ ໃນ background.
-   * ໃບທີ່ສົ່ງແລ້ວຈະບໍ່ຖືກເລືອກ — ຢາກສົ່ງຊ້ຳ ຕ້ອງເອົາຕິກ "ສົ່ງແລ້ວ" ອອກກ່ອນ.
-   */
   async start(period: string, user: { id: string; displayName: string }, ids?: string[]) {
     if (this.state.running) throw new HttpError(409, "ກຳລັງສົ່ງຢູ່ ກະລຸນາລໍຖ້າໃຫ້ສຳເລັດກ່ອນ");
     if (!whatsapp.isReady()) throw new HttpError(409, "WhatsApp ຍັງບໍ່ໄດ້ເຊື່ອມຕໍ່");
 
-    await recoverStuckSending(); // ບໍ່ມີ job run ຢູ່ → 'sending' ທີ່ເຫຼືອແມ່ນຄ້າງ
+    await recoverStuckSending();
     const targets = await sendableIds(period, ids);
     if (targets.length === 0) throw new HttpError(409, "ບໍ່ມີໃບທີ່ຕ້ອງສົ່ງ — ທຸກຄົນໄດ້ຮັບແລ້ວ");
 
@@ -111,7 +107,28 @@ class PayslipJobRunner extends EventEmitter {
   }
 
   private async run(ids: string[], userId: string) {
-    // snapshot ຂໍ້ຄວາມຕອນເລີ່ມ — HR ແກ້ລະຫວ່າງສົ່ງ ຈະບໍ່ກະທົບຮອບນີ້
+    try {
+      await this.process(ids, userId);
+    } catch (err) {
+      console.error("[job]", err);
+      this.state.results.forEach((r, i) => {
+        if (r.status === "pending" || r.status === "sending") this.update(i, { status: "failed", error: "ລະບົບຜິດພາດລະຫວ່າງສົ່ງ" });
+      });
+      await recoverStuckSending().catch(() => {});
+    }
+    this.state.running = false;
+    this.state.current = null;
+    this.state.finishedAt = Date.now();
+    this.emitState();
+    await audit(userId, "payslips_sent", {
+      period: this.state.period,
+      sent: this.state.sent,
+      failed: this.state.failed,
+      skipped: this.state.skipped,
+    }).catch(() => {});
+  }
+
+  private async process(ids: string[], userId: string) {
     const template = await getMessageTemplate();
 
     for (let i = 0; i < ids.length; i++) {
@@ -120,7 +137,6 @@ class PayslipJobRunner extends EventEmitter {
         break;
       }
 
-      // ຈອງໃບນີ້ໃນຖານຂໍ້ມູນກ່ອນ: ຖ້າຄົນອື່ນສົ່ງ ຫຼື ຕິກ "ສົ່ງແລ້ວ" ໄປແລ້ວ ຈະຂ້າມ
       const emp = await claimForSending(ids[i]).catch(() => null);
       if (!emp) {
         this.update(i, { status: "skipped", error: "ສົ່ງແລ້ວ ຫຼື ຖືກປ່ຽນສະຖານະ" });
@@ -145,20 +161,8 @@ class PayslipJobRunner extends EventEmitter {
         this.update(i, { status: "failed", error: message });
       }
 
-      // Delay 4-5 ວິນາທີ ປ້ອງກັນ Spam Block (ບໍ່ຕ້ອງລໍຫຼັງຄົນສຸດທ້າຍ)
       if (i < ids.length - 1 && !this.cancelRequested) await sleep(randomDelay());
     }
-
-    this.state.running = false;
-    this.state.current = null;
-    this.state.finishedAt = Date.now();
-    this.emitState();
-    await audit(userId, "payslips_sent", {
-      period: this.state.period,
-      sent: this.state.sent,
-      failed: this.state.failed,
-      skipped: this.state.skipped,
-    });
   }
 }
 

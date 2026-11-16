@@ -4,7 +4,7 @@ import { PasswordForm } from "@/components/password-form";
 import { COMPANY } from "@/config";
 import { BASE_PATH } from "@/lib/base-path";
 
-export function ForcePasswordChange({ displayName }: { displayName: string }) {
+export function ForcePasswordChange() {
   const logout = async () => {
     await fetch(`${BASE_PATH}/api/auth/logout`, { method: "POST" });
     window.location.assign(`${BASE_PATH}/login`);
@@ -16,7 +16,6 @@ export function ForcePasswordChange({ displayName }: { displayName: string }) {
         <div className="h-1.5 bg-gradient-to-r from-flame-600 via-flame-500 to-flame-300" />
         <div className="p-8">
           <div className="mb-6 flex items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={`${BASE_PATH}/logo.png`} alt={COMPANY.shortName} className="h-12 w-12 object-contain" />
             <div>
               <h1 className="text-lg font-bold text-slate-900">ຕັ້ງລະຫັດຜ່ານໃໝ່</h1>

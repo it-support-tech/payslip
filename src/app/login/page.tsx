@@ -29,7 +29,6 @@ export default async function LoginPage() {
         />
 
         <div className="relative flex items-center gap-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={`${BASE_PATH}/logo.png`} alt={COMPANY.shortName} className="h-16 w-16 object-contain drop-shadow-xl" />
           <div>
             <p className="text-lg font-semibold">{COMPANY.name}</p>
@@ -71,7 +70,6 @@ export default async function LoginPage() {
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-flame-600 via-flame-500 to-flame-300 lg:hidden" />
         <div className="w-full max-w-sm">
           <div className="mb-8 flex flex-col items-center text-center lg:hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={`${BASE_PATH}/logo.png`} alt={COMPANY.shortName} className="h-20 w-20 object-contain" />
             <p className="mt-3 text-sm font-medium text-slate-600">{COMPANY.name}</p>
           </div>

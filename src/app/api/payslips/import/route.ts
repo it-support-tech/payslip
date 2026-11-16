@@ -7,14 +7,8 @@ import { importPayslips, previewImport } from "@/lib/payslips";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_SIZE = 10 * 1024 * 1024;
 
-/**
- * POST multipart/form-data
- *  - file:   ໄຟລ໌ .xlsx
- *  - period: ງວດ (MM/YYYY) ສຳລັບແຖວທີ່ບໍ່ມີຖັນເດືອນ
- *  - commit: "1" = ບັນທຶກລົງຖານຂໍ້ມູນ; ບໍ່ສົ່ງ = ກວດເບິ່ງກ່ອນ (preview)
- */
 export const POST = route(async (req) => {
   const user = await requireUser(req);
   const form = await req.formData();

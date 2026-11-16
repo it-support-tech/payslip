@@ -8,7 +8,6 @@ export const dynamic = "force-dynamic";
 
 const STATUS_LABEL = { pending: "ຍັງບໍ່ໄດ້ສົ່ງ", sending: "ກຳລັງສົ່ງ", sent: "ສົ່ງແລ້ວ", failed: "ລົ້ມເຫຼວ" } as const;
 
-/** GET ?period=10/2026&only=remaining — Excel ທີ່ອັບໂຫລດກັບມານຳເຂົ້າໄດ້ເລີຍ */
 export const GET = route(async (req) => {
   const user = await requireUser(req);
   const url = new URL(req.url);

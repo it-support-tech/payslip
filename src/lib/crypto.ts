@@ -1,6 +1,5 @@
 import crypto from "node:crypto";
 
-// AES-256-GCM: ຮູບແບບ "v1.<iv>.<tag>.<ciphertext>" (base64url)
 const VERSION = "v1";
 
 let cachedKey: Buffer | null = null;
@@ -13,7 +12,6 @@ function masterKey(): Buffer {
   return (cachedKey = key);
 }
 
-// ແຍກ key ສຳລັບແຕ່ລະໜ້າທີ່ ຈາກ master key ດຽວ (HKDF)
 const subKeys = new Map<string, Buffer>();
 function subKey(purpose: string): Buffer {
   let k = subKeys.get(purpose);
@@ -43,14 +41,12 @@ export function decrypt(payload: string): string {
 export const encryptJson = (v: unknown) => encrypt(JSON.stringify(v));
 export const decryptJson = <T>(payload: string): T => JSON.parse(decrypt(payload)) as T;
 
-/** hash ທີ່ຄົງທີ່ (deterministic) ສຳລັບກັນຊ້ຳ ໂດຍບໍ່ເກັບຂໍ້ມູນຈິງ */
 export const blindIndex = (value: string) =>
   crypto.createHmac("sha256", subKey("blind-index")).update(value).digest("base64url");
 
 export const sha256 = (v: string) => crypto.createHash("sha256").update(v).digest("base64url");
 export const randomToken = () => crypto.randomBytes(32).toString("base64url");
 
-// ── Password: scrypt (ມີໃນ Node, ບໍ່ຕ້ອງໃຊ້ native module) ─────────────
 const SCRYPT = { N: 2 ** 15, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
 
 export function hashPassword(password: string): Promise<string> {

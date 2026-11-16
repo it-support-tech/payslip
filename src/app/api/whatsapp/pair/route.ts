@@ -14,6 +14,8 @@ export const POST = route(async (req) => {
   try {
     return NextResponse.json({ code: await whatsapp.requestPairingCode(number) });
   } catch (err) {
-    throw new HttpError(400, err instanceof Error ? err.message : "ຂໍລະຫັດບໍ່ສຳເລັດ");
+    if (err instanceof HttpError) throw err;
+    console.error(err);
+    throw new HttpError(400, "ຂໍລະຫັດບໍ່ສຳເລັດ — ກະລຸນາລອງໃໝ່");
   }
 });

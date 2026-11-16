@@ -14,6 +14,7 @@ import { SendTab } from "./send-tab";
 import { api, useLiveStatus } from "./use-live-status";
 import { UsersTab } from "./users-tab";
 import { WhatsAppCard } from "./whatsapp-tab";
+import { Skeleton } from "./ui";
 import { BASE_PATH } from "@/lib/base-path";
 
 type Tab = "send" | "history" | "message" | "whatsapp" | "users";
@@ -67,7 +68,6 @@ function Shell({ user }: { user: SessionUser }) {
       <header className="sticky top-0 z-20 bg-gradient-to-r from-ntp-950 to-ntp-600 text-white shadow-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3">
           <div className="flex min-w-0 items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={`${BASE_PATH}/logo.png`} alt={COMPANY.shortName} className="h-11 w-11 shrink-0 object-contain drop-shadow" />
             <div className="min-w-0">
               <h1 className="truncate text-lg font-semibold leading-tight">ລະບົບສົ່ງໃບແຈ້ງເງິນເດືອນ</h1>
@@ -110,7 +110,7 @@ function Shell({ user }: { user: SessionUser }) {
         </div>
       </nav>
 
-      <div className="mx-auto max-w-7xl space-y-6 px-6 py-6">
+      <div key={tab} className="animate-slide-up mx-auto max-w-7xl space-y-6 px-6 py-6">
         {error && (
           <div className="flex items-start justify-between rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
             <span>⚠️ {error}</span>
@@ -120,12 +120,14 @@ function Shell({ user }: { user: SessionUser }) {
           </div>
         )}
 
+        {!periods && (tab === "send" || tab === "history") && <PageSkeleton />}
         {tab === "send" && periods && (
           <SendTab
             periods={periods}
             period={period}
             onSelectPeriod={setPeriod}
             onPeriodsChanged={loadPeriods}
+            onOpenWhatsApp={() => setTab("whatsapp")}
             job={job}
             connected={connected}
             onError={setError}
@@ -228,6 +230,21 @@ function UserMenu({ user }: { user: SessionUser }) {
           <PasswordForm onDone={() => setChanged(true)} />
         )}
       </Modal>
+    </div>
+  );
+}
+
+function PageSkeleton() {
+  return (
+    <div className="space-y-6">
+      <Skeleton className="h-36 rounded-2xl" />
+      <Skeleton className="h-28 rounded-2xl" />
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        {Array.from({ length: 5 }, (_, i) => (
+          <Skeleton key={i} className="h-20 rounded-2xl" />
+        ))}
+      </div>
+      <Skeleton className="h-72 rounded-2xl" />
     </div>
   );
 }

@@ -6,9 +6,9 @@ import { BASE_PATH } from "./base-path";
 import { query } from "./db";
 
 export const SESSION_COOKIE = "ntp_session";
-const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 ຊົ່ວໂມງ
+const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
 const MAX_FAILED = 5;
-const LOCK_MS = 1 * 60 * 1000; // ລັອກ 15 ນາທີ ຫຼັງໃສ່ຜິດ 5 ຄັ້ງ
+const LOCK_MS = 1 * 60 * 1000;
 
 export type Role = "admin" | "hr";
 
@@ -49,7 +49,6 @@ export class HttpError extends Error {
   }
 }
 
-/** ກົດລະບຽບລະຫັດຜ່ານ — ຄືນຂໍ້ຄວາມ error ຫຼື null ຖ້າຜ່ານ */
 export function passwordProblem(password: string, username?: string): string | null {
   if (password.length < 8) return "ລະຫັດຜ່ານຕ້ອງມີຢ່າງໜ້ອຍ 8 ຕົວອັກສອນ";
   if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) return "ລະຫັດຜ່ານຕ້ອງມີທັງຕົວອັກສອນ ແລະ ຕົວເລກ";
@@ -57,7 +56,6 @@ export function passwordProblem(password: string, username?: string): string | n
   return null;
 }
 
-// ໃຊ້ກວດລະຫັດຜ່ານຫຼອກ ເມື່ອບໍ່ພົບ user — ເພື່ອໃຫ້ເວລາຕອບເທົ່າກັນ (ບໍ່ບອກໃບ້ວ່າ username ມີຢູ່ບໍ່)
 let dummyHash: Promise<string> | null = null;
 
 export async function login(username: string, password: string): Promise<{ token: string; user: SessionUser }> {
@@ -85,7 +83,7 @@ export async function login(username: string, password: string): Promise<{ token
     await audit(u.id, "login_failed", { locked: !!lock });
     throw new HttpError(
       401,
-      lock ? "ໃສ່ລະຫັດຜິດ 5 ເທື່ອ — ບັນຊີຖືກລັອກ 15 ນາທີ" : "ຊື່ຜູ້ໃຊ້ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ",
+      lock ? `ໃສ່ລະຫັດຜິດ ${MAX_FAILED} ເທື່ອ — ບັນຊີຖືກລັອກ ${LOCK_MS / 60000} ນາທີ` : "ຊື່ຜູ້ໃຊ້ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ",
     );
   }
 
@@ -142,7 +140,6 @@ interface RequireOpts {
 }
 
 export async function requireUser(req: Request, opts: RequireOpts = {}): Promise<SessionUser> {
-  // ກັນ CSRF: request ທີ່ປ່ຽນຂໍ້ມູນຕ້ອງມາຈາກເວັບເຮົາເອງ
   if (req.method !== "GET" && req.method !== "HEAD") {
     const origin = req.headers.get("origin");
     const host = req.headers.get("host");
@@ -157,7 +154,6 @@ export async function requireUser(req: Request, opts: RequireOpts = {}): Promise
 
 type Handler<C> = (req: Request, ctx: C) => Promise<Response>;
 
-/** ຫໍ່ route handler: ແປງ HttpError ເປັນ JSON response */
 export function route<C = unknown>(fn: Handler<C>): Handler<C> {
   return async (req, ctx) => {
     try {
@@ -186,7 +182,6 @@ export async function changePassword(user: SessionUser, current: string, next: s
   return createSession(u.id);
 }
 
-/** ສ້າງ admin ຄົນທຳອິດ ຖ້າຍັງບໍ່ມີ user ໃນລະບົບ */
 export async function seedAdmin() {
   const [{ count }] = await query<{ count: string }>("SELECT count(*) FROM users");
   if (Number(count) > 0) return;

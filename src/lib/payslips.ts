@@ -4,7 +4,6 @@ import { normalizePeriod, type Employee } from "./excel";
 
 export type PayslipStatus = "pending" | "sending" | "sent" | "failed";
 
-/** ຂໍ້ມູນທີ່ encrypt ເກັບໃນ data_enc (ບໍ່ມີ row/error ຂອງຕອນ parse) */
 export type PayslipData = Omit<Employee, "row" | "error">;
 
 export interface PayslipView {
@@ -50,11 +49,8 @@ const toData = (e: Employee): PayslipData => {
   return data;
 };
 
-/** ຕົວຕົນຂອງ 1 ໃບ: ງວດ + ລະຫັດພະນັກງານ (ຫຼື ເບີໂທ ຖ້າບໍ່ມີລະຫັດ) — ໃຊ້ກັນສົ່ງຊ້ຳ */
 const identity = (period: string, e: Pick<Employee, "employeeId" | "phone">) =>
   blindIndex(`${period}|${e.employeeId.trim().toUpperCase() || `tel:${e.phone}`}`);
-
-// ── Import ─────────────────────────────────────────────
 
 export type ImportAction = "new" | "update" | "unchanged" | "locked" | "error";
 
@@ -66,7 +62,6 @@ export interface ImportPreviewRow {
   data: PayslipData;
 }
 
-/** ກວດໄຟລ໌ທຽບກັບຖານຂໍ້ມູນ (ຍັງບໍ່ບັນທຶກ): ແຖວໃດໃໝ່ / ອັບເດດ / ສົ່ງແລ້ວ (ລັອກ) / ຜິດ */
 export async function previewImport(employees: Employee[], defaultPeriod: string): Promise<ImportPreviewRow[]> {
   const fallback = normalizePeriod(defaultPeriod);
   const withPeriod = employees.map((e) => ({ e, period: e.month || fallback }));
@@ -93,7 +88,6 @@ export async function previewImport(employees: Employee[], defaultPeriod: string
   });
 }
 
-/** ບັນທຶກແຖວ new/update ລົງຖານຂໍ້ມູນ. ແຖວທີ່ສົ່ງແລ້ວ ຈະບໍ່ຖືກແກ້ */
 export async function importPayslips(rows: ImportPreviewRow[], userId: string) {
   const writable = rows.filter((r) => r.action === "new" || r.action === "update");
   let inserted = 0;
@@ -117,8 +111,6 @@ export async function importPayslips(rows: ImportPreviewRow[], userId: string) {
   return { inserted, updated, periods: [...new Set(writable.map((r) => r.period))] };
 }
 
-// ── Queries ────────────────────────────────────────────
-
 const SELECT_VIEW = `
   SELECT p.id, p.period, p.row_no, p.status, p.error, p.attempts, p.sent_at, p.data_enc,
          u.display_name AS sent_by_name
@@ -128,7 +120,10 @@ export async function listPayslips(period: string): Promise<PayslipView[]> {
   return (await query<PayslipRow>(`${SELECT_VIEW} WHERE p.period = $1 ORDER BY p.row_no`, [period])).map(toView);
 }
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function getPayslip(id: string): Promise<PayslipView | null> {
+  if (!UUID.test(id)) return null;
   const [r] = await query<PayslipRow>(`${SELECT_VIEW} WHERE p.id = $1`, [id]);
   return r ? toView(r) : null;
 }
@@ -167,11 +162,8 @@ export async function listPeriods(): Promise<PeriodSummary[]> {
     .sort((a, b) => periodSortKey(b.period).localeCompare(periodSortKey(a.period)));
 }
 
-/**
- * ຕິກ / ເອົາຕິກ "ສົ່ງແລ້ວ".
- * ເອົາຕິກອອກ → ກັບເປັນ pending (ສົ່ງໃໝ່ໄດ້). ຕິກ → ໝາຍວ່າສົ່ງແລ້ວ (ເຊັ່ນ HR ສົ່ງເອງນອກລະບົບ).
- */
 export async function setDelivered(id: string, delivered: boolean, userId: string) {
+  if (!UUID.test(id)) return false;
   const [r] = delivered
     ? await query<{ id: string }>(
         `UPDATE payslips SET status = 'sent', sent_at = now(), sent_by = $2, error = NULL, updated_at = now()
@@ -194,22 +186,15 @@ export async function deletePeriod(period: string) {
   return rows.length;
 }
 
-// ── ໃຊ້ໂດຍ job ສົ່ງ ─────────────────────────────────────
-
-/** id ທີ່ຍັງຕ້ອງສົ່ງ (pending / failed) ຂອງງວດນີ້ — ຖ້າລະບຸ ids ຈະເລືອກສະເພາະໃນນັ້ນ */
 export async function sendableIds(period: string, ids?: string[]) {
   const rows = await query<{ id: string }>(
     `SELECT id FROM payslips WHERE period = $1 AND status IN ('pending', 'failed')
        AND ($2::uuid[] IS NULL OR id = ANY($2)) ORDER BY row_no`,
-    [period, ids ?? null],
+    [period, ids?.filter((id) => UUID.test(id)) ?? null],
   );
   return rows.map((r) => r.id);
 }
 
-/**
- * "ຈອງ" 1 ໃບກ່ອນສົ່ງ ດ້ວຍ UPDATE ດຽວ (atomic) — ຖ້າຄົນອື່ນສົ່ງໄປແລ້ວ ຫຼື ກຳລັງສົ່ງ ຈະໄດ້ null.
- * ກັນສົ່ງຊ້ຳ ເຖິງແມ່ນຈະກົດສົ່ງພ້ອມກັນຫຼາຍເຄື່ອງ.
- */
 export async function claimForSending(id: string): Promise<PayslipData | null> {
   const [r] = await query<{ data_enc: string }>(
     `UPDATE payslips SET status = 'sending', attempts = attempts + 1, error = NULL, updated_at = now()
@@ -228,10 +213,6 @@ export const markSent = (id: string, userId: string) =>
 export const markFailed = (id: string, error: string) =>
   query("UPDATE payslips SET status = 'failed', error = $2, updated_at = now() WHERE id = $1", [id, error]);
 
-/**
- * ໃບທີ່ຄ້າງ 'sending' (server ຢຸດ/crash ລະຫວ່າງສົ່ງ) → ບໍ່ຮູ້ວ່າໄປເຖິງບໍ່.
- * ປ່ຽນເປັນ failed ພ້ອມໝາຍເຫດ ເພື່ອໃຫ້ HR ກວດໃນ WhatsApp ກ່ອນ ແລ້ວສົ່ງຄືນໄດ້.
- */
 export const recoverStuckSending = () =>
   query(
     `UPDATE payslips SET status = 'failed', updated_at = now(),
