@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import { COLUMNS, type Employee, type NumberKey, type TextKey, withTotals } from "./payslip-fields";
+import { COLUMNS, type Employee, type NumberKey, type TextKey } from "./payslip-fields";
 
 export type { Employee } from "./payslip-fields";
 
@@ -89,14 +89,16 @@ export function parseEmployeesFromExcel(buffer: ArrayBuffer | Buffer): Employee[
       COLUMNS.filter((c) => c.type === "number").map((c) => [c.key, toNumber(cell(c.key))]),
     ) as Record<NumberKey, number>;
 
-    const emp: Employee = withTotals({
+    const emp: Employee = {
       row: i + 2,
       ...text,
       ...nums,
       phone: normalizePhone(text.phone),
       month: columnOf.has("month") ? monthCell(cell("month"), text.month) : "",
-    });
+    };
+    const blank = (k: string) => cell(k) === "" || cell(k) == null;
     if (!emp.name) emp.error = "ບໍ່ມີຊື່";
+    else if (blank("netPay")) emp.error = "ບໍ່ມີຍອດ ລວມຮັບສຸດທິ";
     else if (emp.month && !/^\d{2}\/\d{4}$/.test(emp.month)) emp.error = `ເດືອນ "${emp.month}" ບໍ່ຖືກຕ້ອງ (ໃຊ້ MM/YYYY)`;
     else if (emp.phone.length < 10) emp.error = "ເບີໂທບໍ່ຖືກຕ້ອງ";
     return emp;
@@ -151,13 +153,15 @@ export function buildTemplateWorkbook(): Buffer {
     workDaysPerMonth: 22,
     actualWorkDays: 22,
     lateDeduction: 7102,
-    salaryEarned: 3000000,
     positionPay: 300000,
     mealHolidayPay: 100000,
     economicRelief: 1000000,
     provincialPay: 250000,
+    totalEarnings: 4650000,
     tax: 150000,
     socialSecurity: 165000,
+    totalDeductions: 322102,
+    netPay: 4327898,
     month: "10/2026",
   };
   const wb = XLSX.utils.book_new();

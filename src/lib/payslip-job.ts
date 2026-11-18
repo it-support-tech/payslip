@@ -167,4 +167,5 @@ class PayslipJobRunner extends EventEmitter {
 }
 
 const g = globalThis as unknown as { __payslipJob?: PayslipJobRunner };
+if (g.__payslipJob) Object.setPrototypeOf(g.__payslipJob, PayslipJobRunner.prototype);
 export const payslipJob: PayslipJobRunner = g.__payslipJob ?? (g.__payslipJob = new PayslipJobRunner());

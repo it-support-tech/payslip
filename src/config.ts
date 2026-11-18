@@ -1,7 +1,9 @@
 export const COMPANY = {
-  name: "ບໍລິສັດ ເອັນທີພີ ການຄ້ານ້ຳມັນເຊື້ອໄຟ ຈຳກັດ",
+  name: "NTP TRADING PETROLEUM CO., LTD",
   shortName: "NTP",
-  address: "ນະຄອນຫຼວງວຽງຈັນ, ສປປ ລາວ",
+  address: "Donglouang Village, Naxay Thong District, Vientiane Capital Laos P.D.R",
+  tel: "030-5888885",
+  email: "ntp@gmail.com",
   currency: "ກີບ",
   logo: "public/logo.png",
 };
