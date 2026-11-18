@@ -15,6 +15,8 @@ const LOGO_PATH = path.join(process.cwd(), COMPANY.logo);
 
 const C = {
   text: "#000000",
+  earn: "#0c2d57",
+  deduct: "#c2410c",
   ...NTP_COLORS,
   ink: "#0f172a",
   body: "#334155",
@@ -37,7 +39,7 @@ type Doc = PDFKit.PDFDocument;
 
 const FONT_OFFSET = -1;
 const fontSize_ = (size: number) => size + FONT_OFFSET;
-type TextOpts = { size?: number; bold?: boolean; align?: "left" | "right" | "center"; width?: number };
+type TextOpts = { size?: number; bold?: boolean; color?: string; align?: "left" | "right" | "center"; width?: number };
 
 function splitRuns(text: string): { lao: boolean; text: string }[] {
   const runs: { lao: boolean; text: string }[] = [];
@@ -68,7 +70,7 @@ function text(doc: Doc, value: string, x: number, y: number, opts: TextOpts = {}
   if (opts.width && opts.align === "right") cx = x + opts.width - total;
   if (opts.width && opts.align === "center") cx = x + (opts.width - total) / 2;
 
-  doc.fillColor(C.text).fontSize(size);
+  doc.fillColor(opts.color ?? C.text).fontSize(size);
   for (const r of splitRuns(value)) {
     doc.font(fontFor(r.lao, opts.bold));
     doc.text(r.text, cx, y + (r.lao ? 0 : size * 0.05), { lineBreak: false });
@@ -178,7 +180,7 @@ export function generatePayslipPDF(emp: Employee): Promise<Buffer> {
     const fy = H - M - 20;
     doc.moveTo(divX, M).lineTo(divX, fy).lineWidth(0.6).stroke(C.line);
 
-    const drawTable = (x: number, title: string, items: [string, number][], totalLabel: string, total: number) => {
+    const drawTable = (x: number, title: string, items: [string, number][], totalLabel: string, total: number, color: string) => {
       doc.save().roundedRect(x, top, tableW, th, 8).clip();
       doc.rect(x, top, tableW, 24).fill(C.blue50);
       doc.rect(x, top + th - 28, tableW, 28).fill(C.blue50);
@@ -190,12 +192,12 @@ export function generatePayslipPDF(emp: Employee): Promise<Buffer> {
         const ry = top + 26 + i * tRowH;
         if (i > 0) doc.moveTo(x + 9, ry).lineTo(x + tableW - 9, ry).lineWidth(0.4).stroke(C.line);
         text(doc, label, x + 9, ry + 5, { size: 7.3 });
-        text(doc, amount(value), x, ry + 5, { size: 7.5, align: "right", width: tableW - 9 });
+        text(doc, amount(value), x, ry + 5, { size: 7.5, bold: true, color, align: "right", width: tableW - 9 });
       });
       const ty = top + 26 + rows * tRowH;
       doc.moveTo(x, ty).lineTo(x + tableW, ty).lineWidth(0.6).stroke(C.line);
       text(doc, totalLabel, x + 9, ty + 7.5, { size: 8.8, bold: true });
-      text(doc, money(total), x, ty + 7.5, { size: 8.8, bold: true, align: "right", width: tableW - 9 });
+      text(doc, money(total), x, ty + 7.5, { size: 8.8, bold: true, color, align: "right", width: tableW - 9 });
       doc.roundedRect(x, top, tableW, th, 8).lineWidth(0.8).stroke(C.line);
     };
     const pick = (list: [string, keyof Employee][]) =>
@@ -209,12 +211,12 @@ export function generatePayslipPDF(emp: Employee): Promise<Buffer> {
       text(doc, `ປະຈຳເດືອນ ${emp.month}`, RX, gy + 30, { size: 9.5, bold: true, align: "center", width: RW });
     }
 
-    drawTable(RX, "ລາຍການຮັບ", pick(EARNINGS), "ລວມລາຍຮັບ", emp.totalEarnings);
-    drawTable(RX + tableW + gap, "ລາຍການຫັກ", pick(DEDUCTIONS), "ລວມລາຍການຫັກ", emp.totalDeductions);
+    drawTable(RX, "ລາຍການຮັບ", pick(EARNINGS), "ລວມລາຍຮັບ", emp.totalEarnings, C.earn);
+    drawTable(RX + tableW + gap, "ລາຍການຫັກ", pick(DEDUCTIONS), "ລວມລາຍການຫັກ", emp.totalDeductions, C.deduct);
 
     doc.roundedRect(RX, ny, RW, nh, 10).lineWidth(0.8).fillAndStroke(C.blue50, C.blue100);
     text(doc, "ເງິນເດືອນສຸດທິທີ່ໄດ້ຮັບ", RX + 14, ny + 8, { size: 9.5, bold: true });
-    text(doc, "ລວມລາຍຮັບ - ລວມລາຍການຫັກ", RX + 14, ny + 24, { size: 6.5 });
+    text(doc, "ລວມລາຍຮັບ", RX + 14, ny + 24, { size: 6.5 });
     const curW = measure(doc, COMPANY.currency, { size: 10, bold: true });
     text(doc, COMPANY.currency, RX, ny + 15, { size: 10, bold: true, align: "right", width: RW - 14 });
     text(doc, money(emp.netPay), RX, ny + 11, { size: 14, bold: true, align: "right", width: RW - 19 - curW });
